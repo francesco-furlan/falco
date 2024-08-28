@@ -54,35 +54,23 @@ jobs:
     # See https://github.com/actions/runner/issues/409#issuecomment-1158849936
     runs-on: ${{ (inputs.arch == 'aarch64' && 'actuated-arm64-8cpu-16gb') || 'ubuntu-latest' }}
     needs: [build-modern-bpf-skeleton]
-    container: centos:7
     steps:
       # Always install deps before invoking checkout action, to properly perform a full clone.
-      - name: Fix mirrors to use vault.centos.org
-        run: |
-          sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo
-          sed -i s/^#.*baseurl=http/baseurl=https/g /etc/yum.repos.d/*.repo
-          sed -i s/^mirrorlist=http/#mirrorlist=https/g /etc/yum.repos.d/*.repo
-
-      - name: Install scl repos
-        run: |
-          yum -y install centos-release-scl
-
-      - name: Fix new mirrors to use vault.centos.org
-        run: |
-          sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo
-          sed -i s/^#.*baseurl=http/baseurl=https/g /etc/yum.repos.d/*.repo
-          sed -i s/^mirrorlist=http/#mirrorlist=https/g /etc/yum.repos.d/*.repo
-
-      - name: Fix arm64 scl repos to use correct mirror
-        if: inputs.arch == 'aarch64'
-        run: |
-          sed -i 's/vault.centos.org\/centos/vault.centos.org\/altarch/g' /etc/yum.repos.d/CentOS-SCLo-scl*.repo
-
       - name: Install build deps
         run: |
-          yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++
-          source /opt/rh/devtoolset-9/enable
-          yum install -y wget git make m4 rpm-build elfutils-libelf-devel perl-IPC-Cmd devtoolset-9-libasan-devel devtoolset-9-libubsan-devel
+          sudo apt update && sudo apt install -y --no-install-recommends ca-certificates cmake curl wget build-essential git pkg-config autoconf automake libtool libelf-dev m4 rpm
+
+      - name: Install zig
+        run: |
+          curl -L -o zig.tar.gz https://ziglang.org/download/0.13.0/zig-linux-$(uname -m)-0.13.0.tar.xz
+          tar -xvf zig.tar.gz
+          sudo mkdir -p /usr/local/zig/
+          sudo cp -R zig-linux-$(uname -m)-0.13.0/* /usr/local/zig/
+          echo "/usr/local/zig" >> $GITHUB_PATH
+          echo "CC=zig cc -target $(uname -m)-linux-gnu.2.17" >> $GITHUB_ENV
+          echo "CXX=zig c++ -target $(uname -m)-linux-gnu.2.17" >> $GITHUB_ENV
+          echo "AR=zig ar" >> $GITHUB_ENV
+          echo "RANLIB=zig ranlib" >> $GITHUB_ENV
 
       - name: Checkout
         # It is not possible to upgrade the checkout action to versions >= v4.0.0 because of incompatibilities with centos 7's libc.
@@ -94,17 +82,12 @@ jobs:
           name: bpf_probe_${{ inputs.arch }}.skel.h
           path: /tmp
 
-      - name: Install updated cmake
-        run: |
-          curl -L https://github.com/Kitware/CMake/releases/download/v3.22.5/cmake-3.22.5-linux-$(uname -m).tar.gz \
-            | tar --directory=/usr --strip-components=1 -xzp
-
       - name: Prepare project
         run: |
-          source /opt/rh/devtoolset-9/enable
           cmake -B build -S . \
               -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} \
               -DUSE_BUNDLED_DEPS=On \
+              -DUSE_BUNDLED_LIBELF=On \
               -DFALCO_ETC_DIR=/etc/falco \
               -DMODERN_BPF_SKEL_DIR=/tmp \
               -DBUILD_DRIVER=Off \
@@ -114,12 +97,10 @@ jobs:
 
       - name: Build project
         run: |
-          source /opt/rh/devtoolset-9/enable
           cmake --build build --target falco -j6
 
       - name: Build packages
         run: |
-          source /opt/rh/devtoolset-9/enable
           cmake --build build --target package
 
       - name: Upload Falco tar.gz package
