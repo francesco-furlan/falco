@@ -51,6 +51,7 @@ jobs:
   build-packages:
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+      ZIG_VERSION: '0.13.0'
     # See https://github.com/actions/runner/issues/409#issuecomment-1158849936
     runs-on: ${{ (inputs.arch == 'aarch64' && 'actuated-arm64-8cpu-16gb') || 'ubuntu-latest' }}
     needs: [build-modern-bpf-skeleton]
@@ -62,13 +63,26 @@ jobs:
 
       - name: Install zig
         run: |
-          curl -L -o zig.tar.gz https://ziglang.org/download/0.13.0/zig-linux-$(uname -m)-0.13.0.tar.xz
+          curl -L -o zig.tar.gz https://ziglang.org/download/0.13.0/zig-linux-${{ inputs.arch }}-${ZIG_VERSION}.tar.xz
           tar -xvf zig.tar.gz
+
+          cat > zig-linux-${{ inputs.arch }}-${ZIG_VERSION}/zig-cc <<EOF
+          #!/bin/bash
+          exec zig cc -target ${{ inputs.arch }}-linux-gnu.2.17 "\$@"
+          EOF
+          chmod +x zig-linux-${{ inputs.arch }}-${ZIG_VERSION}/zig-cc
+
+          cat > zig-linux-${{ inputs.arch }}-${ZIG_VERSION}/zig-c++ <<EOF
+          #!/bin/bash
+          exec zig c++ -target ${{ inputs.arch }}-linux-gnu.2.17 "\$@"
+          EOF
+          chmod +x zig-linux-${{ inputs.arch }}-${ZIG_VERSION}/zig-c++
+
           sudo mkdir -p /usr/local/zig/
-          sudo cp -R zig-linux-$(uname -m)-0.13.0/* /usr/local/zig/
+          sudo cp -R zig-linux-${{ inputs.arch }}-${ZIG_VERSION}/* /usr/local/zig/
           echo "/usr/local/zig" >> $GITHUB_PATH
-          echo "CC=zig cc -target $(uname -m)-linux-gnu.2.17" >> $GITHUB_ENV
-          echo "CXX=zig c++ -target $(uname -m)-linux-gnu.2.17" >> $GITHUB_ENV
+          echo "CC=zig-cc" >> $GITHUB_ENV
+          echo "CXX=zig-c++" >> $GITHUB_ENV
           echo "AR=zig ar" >> $GITHUB_ENV
           echo "RANLIB=zig ranlib" >> $GITHUB_ENV
 
