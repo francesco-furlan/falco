@@ -56,7 +56,6 @@ set(LIBS_PACKAGE_NAME "falcosecurity")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
   add_definitions(-D_GNU_SOURCE)
-  add_definitions(-DHAS_CAPTURE)
 endif()
 
 if(MUSL_OPTIMIZED_BUILD)
