@@ -48,6 +48,11 @@ endif()
 
 
 if(NOT MSVC)
+
+	if(CMAKE_BUILD_TYPE STREQUAL "release")
+		set(FALCO_SECURITY_FLAGS "${FALCO_SECURITY_FLAGS} -D_FORTIFY_SOURCE=2")
+	endif()
+
 	if(USE_ASAN)
 		set(FALCO_SECURITY_FLAGS "${FALCO_SECURITY_FLAGS} -fsanitize=address")
 	endif()
