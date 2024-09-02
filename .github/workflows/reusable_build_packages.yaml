@@ -61,6 +61,7 @@ jobs:
           sudo apt update && sudo apt install -y --no-install-recommends ca-certificates cmake curl wget build-essential git pkg-config autoconf automake libtool libelf-dev m4 rpm
 
       - name: Install zig
+        if: inputs.sanitizers == false
         run: |
           curl -L -o zig.tar.gz https://ziglang.org/builds/zig-linux-${{ inputs.arch }}-${ZIG_VERSION}.tar.xz
           tar -xvf zig.tar.gz
