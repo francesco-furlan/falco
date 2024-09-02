@@ -51,6 +51,7 @@ jobs:
   build-packages:
     env:
       ZIG_VERSION: '0.14.0-dev.1402+cad65307b'
+      AARCH64_ZIG_WORKAROUND: 'Off'
     # See https://github.com/actions/runner/issues/409#issuecomment-1158849936
     runs-on: ${{ (inputs.arch == 'aarch64' && 'actuated-arm64-8cpu-16gb') || 'ubuntu-latest' }}
     needs: [build-modern-bpf-skeleton]
@@ -86,6 +87,9 @@ jobs:
           echo "AR=zig ar" >> $GITHUB_ENV
           echo "RANLIB=zig ranlib" >> $GITHUB_ENV
 
+          # Enable zig workaround for aarch64
+          echo "AARCH64_ZIG_WORKAROUND=On" >> $GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
 
@@ -105,6 +109,7 @@ jobs:
               -DMODERN_BPF_SKEL_DIR=/tmp \
               -DBUILD_DRIVER=Off \
               -DBUILD_BPF=Off \
+              -DAARCH64_ZIG_WORKAROUND=${AARCH64_ZIG_WORKAROUND} \
               -DUSE_ASAN=${{ (inputs.sanitizers == true && inputs.arch == 'x86_64' && 'ON') || 'OFF' }} \
               -DFALCO_VERSION=${{ inputs.version }}
 
