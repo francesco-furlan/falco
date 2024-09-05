@@ -1,0 +1,16 @@
+diff --git a/cmake/modules/libelf.cmake b/cmake/modules/libelf.cmake
+index 1b7311f73..7e7223dcd 100644
+--- a/cmake/modules/libelf.cmake
++++ b/cmake/modules/libelf.cmake
+@@ -27,6 +27,10 @@ elseif(NOT USE_BUNDLED_LIBELF)
+-    find_library(LIBELF_LIB NAMES libelf${LIBELF_LIB_SUFFIX})
++    find_library(LIBELF_LIB NAMES libelf${LIBELF_LIB_SUFFIX} HINTS /usr/lib/@CMAKE_SYSTEM_PROCESSOR@-linux-gnu/)
+     if(LIBELF_LIB)
+         message(STATUS "Found LIBELF: include: ${LIBELF_INCLUDE}, lib: ${LIBELF_LIB}")
++        configure_file(${LIBELF_INCLUDE}/libelf.h libelf.h COPYONLY)
++        configure_file(${LIBELF_INCLUDE}/elf.h elf.h COPYONLY)
++        configure_file(${LIBELF_INCLUDE}/gelf.h gelf.h COPYONLY)
++        set(LIBELF_INCLUDE ${CMAKE_CURRENT_BINARY_DIR})
+     else()
+         message(FATAL_ERROR "Couldn't find system libelf")
+     endif()

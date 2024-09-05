@@ -1,0 +1,12 @@
+diff --git a/cmake/modules/grpc.cmake b/cmake/modules/grpc.cmake
+index d802901d4..327a923f1 100644
+--- a/cmake/modules/grpc.cmake
++++ b/cmake/modules/grpc.cmake
+@@ -205,6 +205,7 @@ else()
+                        # Keep installation files into the local ${GRPC_INSTALL_DIR}
+                        # since here is the case when we are embedding gRPC
+                        UPDATE_COMMAND ""
++                       PATCH_COMMAND sh -c "sed -i 's/armv8-a/cortex_a57/g' ${GRPC_SRC}/third_party/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake"
+                        INSTALL_COMMAND DESTDIR= ${CMAKE_MAKE_PROGRAM} install
+                )
+                install(FILES ${GRPC_MAIN_LIBS} DESTINATION "${CMAKE_INSTALL_LIBDIR}/${LIBS_PACKAGE_NAME}"

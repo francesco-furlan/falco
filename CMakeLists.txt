@@ -24,7 +24,7 @@ option(BUILD_FALCO_UNIT_TESTS "Build falco unit tests" OFF)
 option(USE_ASAN "Build with AddressSanitizer" OFF)
 option(USE_UBSAN "Build with UndefinedBehaviorSanitizer" OFF)
 option(UBSAN_HALT_ON_ERROR "Halt on error when building with UBSan" ON)
-option(AARCH64_ZIG_WORKAROUND "Enable zig workaround for abseil-cpp on arm64" OFF)
+option(ENABLE_ZIG_WORKAROUNDS "Enable zig related workarounds." OFF)
 
 if(WIN32)
   if(POLICY CMP0091)

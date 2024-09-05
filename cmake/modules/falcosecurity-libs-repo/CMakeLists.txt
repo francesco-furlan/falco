@@ -19,29 +19,12 @@ include(ExternalProject)
 message(STATUS "Libs repository: ${FALCOSECURITY_LIBS_REPO}")
 message(STATUS "Libs version: ${FALCOSECURITY_LIBS_VERSION}")
 
-if (AARCH64_ZIG_WORKAROUND)
-    # Add a PATCH_COMMAND to patch grpc.cmake adding a patch (:D)
-    # to fixup emitted -march by abseil-cpp cmake module, so
-    # that it uses a name understood by zig.
-    # PLEASE update patch line (208i) to keep in sync with libs grpc.cmake changes.
-    ExternalProject_Add(
-      falcosecurity-libs
-      URL "https://github.com/${FALCOSECURITY_LIBS_REPO}/archive/${FALCOSECURITY_LIBS_VERSION}.tar.gz"
-      URL_HASH "${FALCOSECURITY_LIBS_CHECKSUM}"
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND ""
-      INSTALL_COMMAND ""
-      TEST_COMMAND ""
-      PATCH_COMMAND sh -c "sed -i '208iPATCH_COMMAND sh -c \"sed -i \'s/armv8-a/cortex_a57/g\' \${GRPC_SRC}/third_party/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake\"' cmake/modules/grpc.cmake"
-    )
-else()
-    ExternalProject_Add(
-            falcosecurity-libs
-            URL "https://github.com/${FALCOSECURITY_LIBS_REPO}/archive/${FALCOSECURITY_LIBS_VERSION}.tar.gz"
-            URL_HASH "${FALCOSECURITY_LIBS_CHECKSUM}"
-            CONFIGURE_COMMAND ""
-            BUILD_COMMAND ""
-            INSTALL_COMMAND ""
-            TEST_COMMAND ""
-    )
-endif()
+ExternalProject_Add(
+        falcosecurity-libs
+        URL "https://github.com/${FALCOSECURITY_LIBS_REPO}/archive/${FALCOSECURITY_LIBS_VERSION}.tar.gz"
+        URL_HASH "${FALCOSECURITY_LIBS_CHECKSUM}"
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ""
+        INSTALL_COMMAND ""
+        TEST_COMMAND ""
+)
