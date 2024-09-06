@@ -329,6 +329,8 @@ public:
 		const std::vector<plugin_version_requirement>& plugins,
 		std::string& err) const;
 
+	nlohmann::json m_rule_schema;
+
 private:
 	// Create a ruleset using the provided factory and set the
 	// engine state funcs for it.
